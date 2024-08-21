@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://dashboard.kashcallerai.com/static/css/bootstrap5.css" rel="stylesheet">
+    <link href="https://dashboard.kashcallerai.com/static/css/select2.min.css" rel="stylesheet">
+    <title>Ascend</title>
+</head>
+<body>
+    <form class="mt-5" action="/submit" method="POST">
+        <div  class="container">
+        <div class="row row-cols-2 justify-content-between g-3">
+            <div class="col">
+                <label for="locationId" class="form-label" >Location Id</label>
+                <input type="text" class="form-control form-control-lg" id="locationId" name="locationId" placeholder="Please Enter the Location Id" required><br><br>
+    
+            </div>
+            <div class="col">
+                <label for="accessToken" class="form-label">Access Code</label>
+                <input type="text" class="form-control form-control-lg" id="accessToken" name="accessToken" placeholder="Please Enter the Access Code" required><br><br>
+           
+            </div>
+
+          
+        </div>
+        <div class=" text-center">
+            <button type="submit" value="Submit" class="btn btn-primary mt-3">Validate Credentials &amp; Submit</button>
+
+        </div>
+    </div>
+    </form>
+</body>
+</html>
