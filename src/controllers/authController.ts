@@ -218,106 +218,106 @@ export async function initiateAuth(req: Request, res: Response) {
 }
 
 
-export async function handleContactData(req: Request, res: Response) {
-    const { type, locationId, contactId } = req.body;
+// export async function handleContactData(req: Request, res: Response) {
+//     const { type, locationId, contactId } = req.body;
 
-    try {
-        const connection = await pool.getConnection();
+//     try {
+//         const connection = await pool.getConnection();
 
-        if (type === 'ContactDelete') {
-            await connection.execute(
-                'DELETE FROM ghl_contacts WHERE ghl_contact_id = ?',
-                [contactId]
-            );
-            res.send(`Contact with ID ${contactId} deleted successfully.`);
-        } else if (type === 'ContactCreate' || type === 'ContactUpdate') {
-            const options = {
-                method: 'GET',
-                url: `https://services.leadconnectorhq.com/contacts/${contactId}`,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await fetchAuthTokenForLocation(locationId)}`,
-                    'Version': '2021-07-28'
-                },
-            };
+//         if (type === 'ContactDelete') {
+//             await connection.execute(
+//                 'DELETE FROM ghl_contacts WHERE ghl_contact_id = ?',
+//                 [contactId]
+//             );
+//             res.send(`Contact with ID ${contactId} deleted successfully.`);
+//         } else if (type === 'ContactCreate' || type === 'ContactUpdate') {
+//             const options = {
+//                 method: 'GET',
+//                 url: `https://services.leadconnectorhq.com/contacts/${contactId}`,
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${await fetchAuthTokenForLocation(locationId)}`,
+//                     'Version': '2021-07-28'
+//                 },
+//             };
 
-            const { data } = await axios.request(options);
-            const { firstName, lastName, email, phone, tags, customFields, dateAdded, dateUpdated } = data.contact;
+//             const { data } = await axios.request(options);
+//             const { firstName, lastName, email, phone, tags, customFields, dateAdded, dateUpdated } = data.contact;
 
-            const formattedDateAdded = dateAdded ? formatDateForMySQL(dateAdded) : null;
-            const formattedDateUpdated = dateUpdated ? formatDateForMySQL(dateUpdated) : null;
+//             const formattedDateAdded = dateAdded ? formatDateForMySQL(dateAdded) : null;
+//             const formattedDateUpdated = dateUpdated ? formatDateForMySQL(dateUpdated) : null;
 
-            const customFieldMapping: { [key: string]: string } = {
-                'e4gG3fbcG4ou9mfuHHZe': 'relationship1',
-                '70F1oJwmm2TJU93Qiy3y': 'message',
-                'mmYtpTLOEZZTZSZDKntX': 'driver_license_number',
-                'fku6pc0H6egGLL1C5Lsc': 'sex',
-                'MREglIwHcD6uNi2CCjX9': 'additional_info'
-            };
+//             const customFieldMapping: { [key: string]: string } = {
+//                 'e4gG3fbcG4ou9mfuHHZe': 'relationship1',
+//                 '70F1oJwmm2TJU93Qiy3y': 'message',
+//                 'mmYtpTLOEZZTZSZDKntX': 'driver_license_number',
+//                 'fku6pc0H6egGLL1C5Lsc': 'sex',
+//                 'MREglIwHcD6uNi2CCjX9': 'additional_info'
+//             };
 
-            const customFieldsData: { [key: string]: any } = {};
-            customFields.forEach((field: { id: string; value: any }) => {
-                const dbFieldName = customFieldMapping[field.id];
-                if (dbFieldName) {
-                    customFieldsData[dbFieldName] = field.value || null;
-                }
-            });
+//             const customFieldsData: { [key: string]: any } = {};
+//             customFields.forEach((field: { id: string; value: any }) => {
+//                 const dbFieldName = customFieldMapping[field.id];
+//                 if (dbFieldName) {
+//                     customFieldsData[dbFieldName] = field.value || null;
+//                 }
+//             });
 
-            const sql = `
-    INSERT INTO ghl_contacts (
-        ghl_location_id, ghl_contact_id, fname, lname, email, phone, tags_list, 
-        Relationship_1, Message, Driver_License_Number, Sex, Additional_Info, dateAdded, dateUpdated
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-        fname = VALUES(fname),
-        lname = VALUES(lname),
-        email = VALUES(email),
-        phone = VALUES(phone),
-        tags_list = VALUES(tags_list),
-        Relationship_1 = VALUES(Relationship_1),
-        Message = VALUES(Message),
-        Driver_License_Number = VALUES(Driver_License_Number),
-        Sex = VALUES(Sex),
-        Additional_Info = VALUES(Additional_Info),
-        dateAdded = VALUES(dateAdded),
-        dateUpdated = VALUES(dateUpdated),
-        updated_on = VALUES(updated_on);
-`;
+//             const sql = `
+//     INSERT INTO ghl_contacts (
+//         ghl_location_id, ghl_contact_id, fname, lname, email, phone, tags_list, 
+//         Relationship_1, Message, Driver_License_Number, Sex, Additional_Info, dateAdded, dateUpdated
+//     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//     ON DUPLICATE KEY UPDATE
+//         fname = VALUES(fname),
+//         lname = VALUES(lname),
+//         email = VALUES(email),
+//         phone = VALUES(phone),
+//         tags_list = VALUES(tags_list),
+//         Relationship_1 = VALUES(Relationship_1),
+//         Message = VALUES(Message),
+//         Driver_License_Number = VALUES(Driver_License_Number),
+//         Sex = VALUES(Sex),
+//         Additional_Info = VALUES(Additional_Info),
+//         dateAdded = VALUES(dateAdded),
+//         dateUpdated = VALUES(dateUpdated),
+//         updated_on = VALUES(updated_on);
+// `;
 
-const values = [
-    locationId,
-    contactId,
-    firstName,
-    lastName,
-    email,
-    phone,
-    JSON.stringify(tags),
-    customFieldsData.relationship1 || null,
-    customFieldsData.message || null,
-    customFieldsData.driver_license_number || null,
-    customFieldsData.sex || null,
-    customFieldsData.additional_info || null,
-    formattedDateAdded,
-    formattedDateUpdated,
-];
+// const values = [
+//     locationId,
+//     contactId,
+//     firstName,
+//     lastName,
+//     email,
+//     phone,
+//     JSON.stringify(tags),
+//     customFieldsData.relationship1 || null,
+//     customFieldsData.message || null,
+//     customFieldsData.driver_license_number || null,
+//     customFieldsData.sex || null,
+//     customFieldsData.additional_info || null,
+//     formattedDateAdded,
+//     formattedDateUpdated,
+// ];
 
-            await connection.execute(sql, values);
-            res.send(`Contact with ID ${contactId} inserted/updated successfully.`);
-        } else {
-            res.status(400).send('Invalid type');
-        }
-    } catch (error) {
-        console.error('Error handling contact data:', error);
-        res.status(500).send('Internal Server Error');
-    }
-}
+//             await connection.execute(sql, values);
+//             res.send(`Contact with ID ${contactId} inserted/updated successfully.`);
+//         } else {
+//             res.status(400).send('Invalid type');
+//         }
+//     } catch (error) {
+//         console.error('Error handling contact data:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// }
 
 export function formatDateForMySQL(dateString: string): string {
-    console.log("Original dateString:", dateString); // Debugging line
+   
 
     const timestamp = dateString;
     const mysqlFormattedTimestamp = timestamp.replace('T', ' ').replace('Z', '');
-    console.log(mysqlFormattedTimestamp); 
+ 
     return mysqlFormattedTimestamp
 }
 
@@ -534,7 +534,7 @@ async function updateOpportunityData(opportunities: any[], locationId: string) {
 
             // Check if assignedTo exists in the assigned_to table
             const [assignedToRows]: any[] = await connection.execute(`
-                SELECT contact_name FROM assigned_to WHERE id = ?
+                SELECT assignedTo FROM assigned_to WHERE id = ?
             `, [assignedTo]);
 
             let assignedToName: string | null = null;
@@ -556,13 +556,13 @@ async function updateOpportunityData(opportunities: any[], locationId: string) {
 
                 // Insert assignedTo data into the assigned_to table
                 await connection.execute(`
-                    INSERT INTO assigned_to (id, contact_name, contact_email, contact_phone)
+                    INSERT INTO assigned_to (id, assignedTo, assignedTo_email, assignedTo_phone)
                     VALUES (?, ?, ?, ?)
                  `, [id, name, email, phone]);
 
                 assignedToName = name;
             } else {
-                assignedToName = assignedToRows[0]?.contact_name ?? null;
+                assignedToName = assignedToRows[0]?.assignedTo ?? null;
             }
 
             // Format the datetime fields
@@ -616,6 +616,39 @@ async function updateOpportunityData(opportunities: any[], locationId: string) {
                     SET ${mysql.escapeId(sanitizedColumnName)} = ?
                     WHERE opportunity_id = ?
                 `, [formattedLastStageChangeAt, opportunityId]);
+
+                   // If the stage is "Sale Closed Onboard", update the goal_achieved and pace_so_far in assigned_to table
+                   if (sanitizedColumnName === 'stage_Sale_Closed_Onboard_') {
+                    const [assignedToData]: any[] = await connection.execute(`
+                        SELECT minimum_goal, goal_achieved FROM assigned_to WHERE id = ?
+                    `, [assignedTo]);
+                
+                    if (assignedToData.length > 0) {
+                        let { minimum_goal, goal_achieved } = assignedToData[0];
+                
+                        // Ensure monetaryValue is treated as a number
+                        const monetaryValueNumber = parseFloat(monetaryValue) || 0;
+                        
+                        // Update goal_achieved by adding monetaryValue
+                        goal_achieved = parseFloat(goal_achieved) || 0;
+                        goal_achieved += monetaryValueNumber;
+                
+                        // Calculate pace_so_far
+                        const currentMonth = new Date().getMonth() + 1;
+                        const remainingMonths = 12 - currentMonth;
+                        let pace_so_far = (minimum_goal - goal_achieved) / remainingMonths;
+                        if (pace_so_far < 0) {
+                            pace_so_far = 0;
+                        }
+                
+                        // Update the assigned_to table with the new goal_achieved and pace_so_far values
+                        await connection.execute(`
+                            UPDATE assigned_to
+                            SET goal_achieved = ?, pace_so_far = ?
+                            WHERE id = ?
+                        `, [goal_achieved, pace_so_far, assignedTo]);
+                    }
+                }
             }
         }
 
@@ -657,5 +690,183 @@ export async function setInitialFetchState(state: boolean): Promise<void> {
 
 
 
+export async function renderGoalForm(req: Request, res: Response): Promise<void> {
+    try {
+        const connection = await pool.getConnection();
+
+        // Fetch all users from the assigned_to table
+        const [rows]: any[] = await connection.execute('SELECT id, assignedTo FROM assigned_to');
+
+        // Create HTML form with embedded CSS for styling
+        let formHtml = `
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: auto;
+                        padding: 20px;
+                        background: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #333;
+                    }
+                    label {
+                        display: block;
+                        margin: 10px 0 5px;
+                        color: #555;
+                    }
+                    select, input[type="number"] {
+                        width: 100%;
+                        padding: 10px;
+                        margin: 5px 0 15px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                    }
+                    button {
+                        display: block;
+                        width: 100%;
+                        padding: 10px;
+                        background-color: #007bff;
+                        border: none;
+                        color: white;
+                        border-radius: 4px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        transition: background-color 0.3s;
+                    }
+                    button:hover {
+                        background-color: #0056b3;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Update Goals</h1>
+                    <form action="/update-goal" method="POST">
+                        <label for="user">Select User:</label>
+                        <select name="userId" id="user">
+        `;
+
+        rows.forEach((row: any) => {
+            formHtml += `<option value="${row.id}">${row.assignedTo}</option>`;
+        });
+
+        formHtml += `
+                        </select>
+                        <label for="minimum_goal">Minimum Goal:</label>
+                        <input type="number" name="minimum_goal" id="minimum_goal" required>
+                        <label for="actual_goal">Actual Goal:</label>
+                        <input type="number" name="actual_goal" id="actual_goal" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </body>
+            </html>
+        `;
+
+        // Send the HTML form as a response
+        res.send(formHtml);
+    } catch (error) {
+        console.error('Error rendering goal form:', error);
+        res.status(500).send('Internal Server Error');
+    }
+}
 
 
+export async function updateGoal(req: Request, res: Response): Promise<void> {
+    const { userId, minimum_goal, actual_goal } = req.body;
+    const connection = await pool.getConnection();
+
+    try {
+        // Update the assigned_to table with the new goal values for the selected user
+        const updateQuery = `
+            UPDATE assigned_to
+            SET 
+                minimum_goal = ?, 
+                actual_goal = ?
+            WHERE 
+                id = ?
+        `;
+
+        await connection.execute(updateQuery, [minimum_goal, actual_goal, userId]);
+
+        
+
+        const [rows]: any[] = await connection.execute(`
+            SELECT minimum_goal, actual_goal 
+            FROM assigned_to 
+            WHERE id = ?
+        `, [userId]);
+
+        if (rows.length === 0) {
+            res.status(404).send('User not found');
+            return;
+        }
+
+      
+        const minimumGoalOfUser = rows[0].minimum_goal
+        const actualGoalOfUser = rows[0].actual_goal
+        // Calculate the remaining months until the end of the year
+        const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based, so add 1
+        const remainingMonths = 12 - currentMonth;
+
+        // Calculate pace_so_far and ensure it is not less than 0
+        let pace_so_far = (minimumGoalOfUser - actualGoalOfUser) / remainingMonths;
+        if (pace_so_far < 0) {
+            pace_so_far = 0;
+        }
+
+        // Update the assigned_to table with the calculated pace_so_far
+        const paceUpdateQuery = `
+            UPDATE assigned_to
+            SET 
+                pace_so_far = ?
+            WHERE 
+                id = ?
+        `;
+
+        await connection.execute(paceUpdateQuery, [pace_so_far, userId]);
+
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                 <link href="https://dashboard.kashcallerai.com/static/css/bootstrap5.css" rel="stylesheet">
+    <link href="https://dashboard.kashcallerai.com/static/css/select2.min.css" rel="stylesheet">
+  <title>Update Success</title>
+            
+            </head>
+            <body class="bg-light">
+        <div class="container d-flex justify-content-center align-items-center vh-100">
+            <div class="text-center bg-white p-5 rounded shadow-sm">
+                <h1 class="text-success">Success!</h1>
+                <p class="lead">Goaks updated successfully!</p>
+                <a href="/goalForm" class="btn btn-primary mt-3">Go Back</a>
+            </div>
+        </div>
+            </body>
+            </html>
+        `);
+
+
+        
+    } catch (error) {
+        console.error('Error updating pace:', error);
+        res.status(500).send('Internal Server Error');
+    } finally {
+        connection.release(); // Ensure the connection is released back to the pool
+    }
+}

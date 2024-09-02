@@ -3,14 +3,14 @@ import bodyParser from 'body-parser';
 import router from './routes/routes';
 
 const app = express();
-const port: number = 3000;
+const port = process.env.PORT;
 // Middleware to parse URL-encoded data
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
 
 
-app.use(express.json());
+
 
 app.use('/',router)
 
